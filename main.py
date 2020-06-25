@@ -45,6 +45,7 @@ class FinanceTracker:
         self.expenses_view.heading('Date', text='Date')
         self.expenses_view.heading('Purchase Type', text='Purchase Type')
         self.expenses_view.heading('Cost', text='Cost')
+        self.show_previous()
 
         # Creating date object to accompany user input in the tree
 
@@ -60,13 +61,29 @@ class FinanceTracker:
         self.cost_label.pack(side="right")
         self.frame.pack()
 
+    """Reads CSV file for existing entries, formats the data to be displayed in the Tree,
+       if no CSV file is found a new one is created."""
+    def show_previous(self):
+        try:
+            file = open("user_finances.csv")
+            data = [row for row in reader(file)]
+            for entry in data:
+                self.expenses_view.insert("", tk.END, values=(entry))
+        except FileNotFoundError:
+            open("user_finances.csv", "a+")
+            self.show_previous()
+
     
-    # Add and format new entries to the tree, Checks if the input in the entry field is an integer, will display error message if not
+    """ Add and format new entries to the tree, checks user input, writes entries to CSV """
 
     def add_expense(self, date_today, pur_type, cost):
         try:
             if int(self.cost_entry.get()) >= 1:
                     self.expenses_view.insert("", tk.END, values=(date_today, pur_type, cost))
+                    formatted_values = [date_today, pur_type, cost]
+                    with open('user_finances.csv', 'a', newline='') as write_to:
+                        csv_writer = writer(write_to)
+                        csv_writer.writerow(formatted_values)
 
         except ValueError:
             messagebox.showerror("Error", "Please enter a valid number")
